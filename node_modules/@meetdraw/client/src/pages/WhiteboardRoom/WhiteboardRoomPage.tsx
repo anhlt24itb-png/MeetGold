@@ -66,7 +66,7 @@ export const WhiteboardRoomPage: React.FC = () => {
   const { isConnected: isWsConnected, selfPeerId } = useWebSocket();
 
   // 2. Room membership and presence
-  const { roomDetails, participants, leave } = useRoom(roomId, actualUsername);
+  const { roomDetails, participants, leave } = useRoom(roomId, actualUsername, currentUser?.id, currentUser?.email);
 
   // 3. Local Camera, Microphone & Screen Share
   const {

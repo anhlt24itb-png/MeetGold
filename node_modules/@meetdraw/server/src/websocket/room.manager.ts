@@ -4,6 +4,7 @@ import { PeerInfo, SignalMessage } from '@meetdraw/shared';
 export interface ConnectedPeer {
   id: string;
   username: string;
+  userId?: string;
   ws: WebSocket;
   joinedAt: number;
   isHost: boolean;
@@ -15,7 +16,13 @@ export class RoomManager {
   // peerId -> roomId
   private peerToRoom: Map<string, string> = new Map();
 
-  joinRoom(roomId: string, peerId: string, username: string, ws: WebSocket): { peers: PeerInfo[]; isHost: boolean } {
+  joinRoom(
+    roomId: string,
+    peerId: string,
+    username: string,
+    ws: WebSocket,
+    userId?: string
+  ): { peers: PeerInfo[]; isHost: boolean } {
     if (!this.rooms.has(roomId)) {
       this.rooms.set(roomId, new Map());
     }
@@ -26,6 +33,7 @@ export class RoomManager {
     const existingPeers: PeerInfo[] = Array.from(room.values()).map((p) => ({
       id: p.id,
       username: p.username,
+      userId: p.userId,
       joinedAt: p.joinedAt,
       isHost: p.isHost,
     }));
@@ -33,6 +41,7 @@ export class RoomManager {
     const newPeer: ConnectedPeer = {
       id: peerId,
       username,
+      userId,
       ws,
       joinedAt: Date.now(),
       isHost,
@@ -76,6 +85,7 @@ export class RoomManager {
     return Array.from(room.values()).map((p) => ({
       id: p.id,
       username: p.username,
+      userId: p.userId,
       joinedAt: p.joinedAt,
       isHost: p.isHost,
     }));

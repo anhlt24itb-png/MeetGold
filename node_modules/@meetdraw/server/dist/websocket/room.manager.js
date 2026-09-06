@@ -7,7 +7,7 @@ class RoomManager {
     rooms = new Map();
     // peerId -> roomId
     peerToRoom = new Map();
-    joinRoom(roomId, peerId, username, ws) {
+    joinRoom(roomId, peerId, username, ws, userId) {
         if (!this.rooms.has(roomId)) {
             this.rooms.set(roomId, new Map());
         }
@@ -16,12 +16,14 @@ class RoomManager {
         const existingPeers = Array.from(room.values()).map((p) => ({
             id: p.id,
             username: p.username,
+            userId: p.userId,
             joinedAt: p.joinedAt,
             isHost: p.isHost,
         }));
         const newPeer = {
             id: peerId,
             username,
+            userId,
             ws,
             joinedAt: Date.now(),
             isHost,
@@ -57,6 +59,7 @@ class RoomManager {
         return Array.from(room.values()).map((p) => ({
             id: p.id,
             username: p.username,
+            userId: p.userId,
             joinedAt: p.joinedAt,
             isHost: p.isHost,
         }));

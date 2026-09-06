@@ -18,8 +18,13 @@ import { createLogger } from '../../utils/logger';
 
 const log = createLogger('PeerManager');
 
+export interface ConnectedPeerInfo {
+  id: string;
+  username: string;
+}
+
 export type PeerManagerListener = {
-  onPeersUpdated?: (peers: string[]) => void;
+  onPeersUpdated?: (peers: ConnectedPeerInfo[]) => void;
   onRemoteStream?: (peerId: string, stream: MediaStream) => void;
   onRemoteStreamRemoved?: (peerId: string) => void;
   onWhiteboardEvent?: (peerId: string, event: WhiteboardEvent) => void;
@@ -29,6 +34,7 @@ export type PeerManagerListener = {
 
 export class PeerManager {
   private peers: Map<string, SinglePeerConnection> = new Map();
+  private peerUsernames: Map<string, string> = new Map();
   private roomId: string | null = null;
   private listeners: PeerManagerListener = {};
   private unsubscribers: Array<() => void> = [];
@@ -56,6 +62,7 @@ export class PeerManager {
 
       // As the new joiner, connect to existing peers by creating offers
       for (const peer of existingPeers) {
+        this.peerUsernames.set(peer.id, peer.username);
         await this.connectToPeer(peer.id, true);
       }
     });
@@ -64,6 +71,7 @@ export class PeerManager {
     const unsubUserJoined = signalingService.on<UserJoinedPayload>('USER_JOINED', async (msg) => {
       if (!msg.payload) return;
       log.info(`New user joined room: ${msg.payload.username} (${msg.payload.peerId})`);
+      this.peerUsernames.set(msg.payload.peerId, msg.payload.username);
       // The newly joined peer will send an offer to us, so we create our connection entry and await their offer
       this.getOrCreatePeer(msg.payload.peerId);
     });
@@ -175,11 +183,19 @@ export class PeerManager {
     const newPeer = new SinglePeerConnection(peerId, callbacks);
     this.peers.set(peerId, newPeer);
 
-    if (this.listeners.onPeersUpdated) {
-      this.listeners.onPeersUpdated(Array.from(this.peers.keys()));
-    }
+    this.notifyPeersUpdated();
 
     return newPeer;
+  }
+
+  private notifyPeersUpdated() {
+    if (this.listeners.onPeersUpdated) {
+      const peerInfos: ConnectedPeerInfo[] = Array.from(this.peers.keys()).map((id) => ({
+        id,
+        username: this.peerUsernames.get(id) || '',
+      }));
+      this.listeners.onPeersUpdated(peerInfos);
+    }
   }
 
   removePeer(peerId: string) {
@@ -187,12 +203,11 @@ export class PeerManager {
     if (peer) {
       peer.close();
       this.peers.delete(peerId);
+      this.peerUsernames.delete(peerId);
       if (this.listeners.onRemoteStreamRemoved) {
         this.listeners.onRemoteStreamRemoved(peerId);
       }
-      if (this.listeners.onPeersUpdated) {
-        this.listeners.onPeersUpdated(Array.from(this.peers.keys()));
-      }
+      this.notifyPeersUpdated();
     }
   }
 
@@ -249,6 +264,7 @@ export class PeerManager {
       peer.close();
     }
     this.peers.clear();
+    this.peerUsernames.clear();
     this.roomId = null;
   }
 }

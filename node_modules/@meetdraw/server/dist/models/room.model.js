@@ -62,7 +62,6 @@ class RoomModel {
         const pool = (0, database_1.getDbPool)();
         if (pool) {
             try {
-                await pool.query('INSERT IGNORE INTO rooms (id, name, owner_id, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())', [roomId, `Room ${roomId}`, userId]);
                 await pool.query('INSERT IGNORE INTO room_members (id, room_id, user_id, joined_at) VALUES (UUID(), ?, ?, NOW())', [roomId, userId]);
             }
             catch (err) {

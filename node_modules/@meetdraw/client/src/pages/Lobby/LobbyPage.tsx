@@ -12,6 +12,7 @@ export const LobbyPage: React.FC = () => {
   const [newRoomTitle, setNewRoomTitle] = useState('');
   const [joinRoomId, setJoinRoomId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,15 +30,13 @@ export const LobbyPage: React.FC = () => {
       });
       navigate(`/room/${room.id}`);
     } catch (err: any) {
-      // Fallback: generate local room ID if REST API is offline
-      const fallbackId = Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 6);
-      navigate(`/room/${fallbackId}`);
+      setError(err.message || 'Failed to create room. Please try again.');
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleJoinRoom = (e: React.FormEvent) => {
+  const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!joinRoomId.trim()) return;
 
@@ -47,7 +46,16 @@ export const LobbyPage: React.FC = () => {
       cleanId = cleanId.split('/room/')[1].split('?')[0];
     }
 
-    navigate(`/room/${cleanId}`);
+    setIsJoining(true);
+    setError(null);
+    try {
+      await apiService.joinRoom(cleanId);
+      navigate(`/room/${cleanId}`);
+    } catch (err: any) {
+      setError(err.message || 'Room not found. Please check the code and try again.');
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   return (
@@ -196,16 +204,22 @@ export const LobbyPage: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!joinRoomId.trim()}
+                  disabled={!joinRoomId.trim() || isJoining}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 font-semibold text-white text-xs py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center space-x-1.5"
                 >
-                  <span>Join Meeting</span>
+                  <span>{isJoining ? 'Joining...' : 'Join Meeting'}</span>
                   <ArrowRight size={15} />
                 </button>
               </form>
             </div>
           </div>
         </div>
+
+        {error && (
+          <div className="max-w-2xl mx-auto w-full mt-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 text-center">
+            {error}
+          </div>
+        )}
       </main>
 
       {/* Footer */}

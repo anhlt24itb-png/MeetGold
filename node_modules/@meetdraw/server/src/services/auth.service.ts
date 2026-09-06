@@ -7,9 +7,17 @@ import { RegisterDto, LoginDto, AuthResponse, User } from '@meetdraw/shared';
 
 export class AuthService {
   static async register(dto: RegisterDto): Promise<AuthResponse> {
-    const existing = await UserModel.findByEmail(dto.email);
-    if (existing) {
+    const email = dto.email.trim().toLowerCase();
+    const username = dto.username.trim();
+
+    const existingEmail = await UserModel.findByEmail(email);
+    if (existingEmail) {
       throw new Error('Email is already in use');
+    }
+
+    const existingUsername = await UserModel.findByUsername(username);
+    if (existingUsername) {
+      throw new Error('Username is already taken');
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -17,8 +25,8 @@ export class AuthService {
 
     const newUser: UserRecord = {
       id: uuidv4(),
-      username: dto.username.trim(),
-      email: dto.email.trim().toLowerCase(),
+      username,
+      email,
       password_hash: passwordHash,
       createdAt: new Date().toISOString(),
     };
@@ -37,7 +45,8 @@ export class AuthService {
   }
 
   static async login(dto: LoginDto): Promise<AuthResponse> {
-    const userRecord = await UserModel.findByEmail(dto.email);
+    const email = dto.email.trim().toLowerCase();
+    const userRecord = await UserModel.findByEmail(email);
     if (!userRecord) {
       throw new Error('Invalid email or password');
     }
