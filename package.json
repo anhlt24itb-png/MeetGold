@@ -16,7 +16,8 @@
     "build:shared": "npm run build --workspace=shared",
     "build:server": "npm run build --workspace=server",
     "build:client": "npm run build --workspace=client",
-    "build": "npm run build:shared && npm run build:server && npm run build:client"
+    "build": "npm run build:shared && npm run build:server && npm run build:client",
+    "start:server": "node server/dist/server.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

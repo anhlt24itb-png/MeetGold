@@ -29,12 +29,16 @@ class SignalingService {
   public currentRoomId: string | null = null;
 
   constructor() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use port 5000 in dev when accessing from Vite on port 3000
-    const host = window.location.port === '3000' 
-      ? `${window.location.hostname}:5000` 
-      : window.location.host;
-    this.url = `${protocol}//${host}/signaling`;
+    if (import.meta.env.VITE_SIGNALING_URL) {
+      this.url = import.meta.env.VITE_SIGNALING_URL;
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      // Use port 5000 in dev when accessing from Vite on port 3000
+      const host = window.location.port === '3000' 
+        ? `${window.location.hostname}:5000` 
+        : window.location.host;
+      this.url = `${protocol}//${host}/signaling`;
+    }
   }
 
   connect(): Promise<void> {

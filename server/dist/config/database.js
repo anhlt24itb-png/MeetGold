@@ -14,17 +14,25 @@ let pool = null;
 let isConnected = false;
 async function initDatabase() {
     try {
-        console.log(`[Database] Connecting to Docker MySQL at ${env_1.ENV.DB.HOST}:${env_1.ENV.DB.PORT} with user '${env_1.ENV.DB.USER}'...`);
-        // 1. Connect to MySQL server to ensure DB exists
-        const adminConnection = await promise_1.default.createConnection({
-            host: env_1.ENV.DB.HOST,
-            port: env_1.ENV.DB.PORT,
-            user: env_1.ENV.DB.USER,
-            password: env_1.ENV.DB.PASSWORD,
-            connectTimeout: 5000,
-        });
-        await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${env_1.ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-        await adminConnection.end();
+        console.log(`[Database] Connecting to MySQL at ${env_1.ENV.DB.HOST}:${env_1.ENV.DB.PORT} with user '${env_1.ENV.DB.USER}'...`);
+        const sslConfig = env_1.ENV.DB.SSL ? { rejectUnauthorized: false } : undefined;
+        // 1. Try to ensure DB exists (works for local Docker, may skip for managed Cloud DBs)
+        try {
+            const adminConnection = await promise_1.default.createConnection({
+                host: env_1.ENV.DB.HOST,
+                port: env_1.ENV.DB.PORT,
+                user: env_1.ENV.DB.USER,
+                password: env_1.ENV.DB.PASSWORD,
+                ssl: sslConfig,
+                connectTimeout: 5000,
+            });
+            await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${env_1.ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+            await adminConnection.end();
+        }
+        catch (adminErr) {
+            // Cloud databases like TiDB / Aiven usually already have the database created and may forbid CREATE DATABASE
+            console.log(`[Database] Notice: Admin DB check skipped/passed: ${adminErr.message}`);
+        }
         // 2. Create pool connected to the database
         pool = promise_1.default.createPool({
             host: env_1.ENV.DB.HOST,
@@ -32,18 +40,21 @@ async function initDatabase() {
             user: env_1.ENV.DB.USER,
             password: env_1.ENV.DB.PASSWORD,
             database: env_1.ENV.DB.NAME,
+            ssl: sslConfig,
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
             enableKeepAlive: true,
             keepAliveInitialDelay: 0,
         });
+        // Test connection
+        await pool.query('SELECT 1');
         // 3. Create tables if not exist
         await createTables(pool);
         // 4. Seed demo users into MySQL
         await seedDemoUsers(pool);
         isConnected = true;
-        console.log(`[Database] ✅ Successfully connected to Docker MySQL database: ${env_1.ENV.DB.NAME} on port ${env_1.ENV.DB.PORT}`);
+        console.log(`[Database] ✅ Successfully connected to MySQL database: ${env_1.ENV.DB.NAME} on ${env_1.ENV.DB.HOST}:${env_1.ENV.DB.PORT}`);
         return true;
     }
     catch (error) {

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: meetdraw-server
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run build:shared && npm run build:server
+    startCommand: npm run start:server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      # Cấu hình Database: Mặc định nếu không cung cấp Cloud MySQL, server sẽ chạy bằng In-Memory Fallback
+      - key: DB_HOST
+        value: localhost
+      - key: DB_PORT
+        value: "3307"
+      - key: DB_USER
+        value: root
+      - key: DB_PASSWORD
+        value: ""
+      - key: DB_NAME
+        value: meetdraw_db
+      - key: DB_SSL
+        value: "false"

@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Load .env from server dir or root dir
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const ENV = {
   PORT: parseInt(process.env.PORT || '5000', 10),
@@ -13,6 +15,7 @@ export const ENV = {
     USER: process.env.DB_USER || 'root',
     PASSWORD: process.env.DB_PASSWORD || '',
     NAME: process.env.DB_NAME || 'meetdraw_db',
+    SSL: process.env.DB_SSL === 'true',
   },
   STUN_SERVERS: (process.env.STUN_SERVERS || 'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302')
     .split(',')
