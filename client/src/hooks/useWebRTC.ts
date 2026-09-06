@@ -35,27 +35,32 @@ export function useWebRTC(
 
     // Initialize peerManager with listeners
     peerManager.init(roomId, {
-      onPeersUpdated: (peerIds) => {
-        setActivePeersCount(peerIds.length);
+      onPeersUpdated: (peerInfos) => {
+        setActivePeersCount(peerInfos.length);
         setRemotePeers((prev) => {
           const next = new Map(prev);
+          const peerIds = peerInfos.map((p) => p.id);
           // Remove peers no longer present
           for (const key of next.keys()) {
             if (!peerIds.includes(key)) {
               next.delete(key);
             }
           }
-          // Add newly discovered peers
-          for (const id of peerIds) {
-            if (!next.has(id)) {
-              next.set(id, {
-                id,
-                username: `Peer-${id.substring(0, 4)}`,
+          // Add newly discovered peers / update usernames as they become known
+          for (const info of peerInfos) {
+            const existing = next.get(info.id);
+            const username = info.username || existing?.username || `Peer-${info.id.substring(0, 4)}`;
+            if (!existing) {
+              next.set(info.id, {
+                id: info.id,
+                username,
                 connectionState: 'connecting',
                 isAudioMuted: false,
                 isVideoMuted: false,
                 dataChannelReady: false,
               });
+            } else if (info.username && existing.username !== info.username) {
+              next.set(info.id, { ...existing, username: info.username });
             }
           }
           return next;

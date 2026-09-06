@@ -9,7 +9,7 @@ import {
 import { signalingService } from '../services/signaling.service';
 import { apiService } from '../services/api';
 
-export function useRoom(roomId: string, username: string) {
+export function useRoom(roomId: string, username: string, userId?: string, email?: string) {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [participants, setParticipants] = useState<PeerInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export function useRoom(roomId: string, username: string) {
     signalingService
       .connect()
       .then(() => {
-        signalingService.joinRoom(roomId, username);
+        signalingService.joinRoom(roomId, username, userId, email);
       })
       .catch((err) => {
         if (isMounted) setError(err.message || 'Failed to connect to signaling');
@@ -92,7 +92,7 @@ export function useRoom(roomId: string, username: string) {
       unsubUserLeft();
       signalingService.leaveRoom(roomId);
     };
-  }, [roomId, username]);
+  }, [roomId, username, userId, email]);
 
   const leave = useCallback(() => {
     signalingService.leaveRoom(roomId);

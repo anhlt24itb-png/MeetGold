@@ -6,8 +6,23 @@ export class AuthController {
   static async register(req: Request, res: Response) {
     try {
       const { username, email, password } = req.body;
-      if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Username, email and password are required' });
+      if (!username || typeof username !== 'string' || !username.trim()) {
+        return res.status(400).json({ message: 'Username is required' });
+      }
+      if (!email || typeof email !== 'string' || !email.trim()) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+      if (!password || typeof password !== 'string') {
+        return res.status(400).json({ message: 'Password is required' });
+      }
+
+      if (username.trim().length < 2) {
+        return res.status(400).json({ message: 'Username must be at least 2 characters long' });
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email.trim())) {
+        return res.status(400).json({ message: 'Please provide a valid email address' });
       }
 
       if (password.length < 6) {
@@ -17,7 +32,8 @@ export class AuthController {
       const result = await AuthService.register({ username, email, password });
       return res.status(201).json(result);
     } catch (err: any) {
-      return res.status(400).json({ message: err.message || 'Registration failed' });
+      const isConflict = /already in use|already taken/i.test(err.message || '');
+      return res.status(isConflict ? 409 : 400).json({ message: err.message || 'Registration failed' });
     }
   }
 

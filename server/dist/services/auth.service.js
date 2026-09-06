@@ -11,16 +11,22 @@ const user_model_1 = require("../models/user.model");
 const env_1 = require("../config/env");
 class AuthService {
     static async register(dto) {
-        const existing = await user_model_1.UserModel.findByEmail(dto.email);
-        if (existing) {
+        const email = dto.email.trim().toLowerCase();
+        const username = dto.username.trim();
+        const existingEmail = await user_model_1.UserModel.findByEmail(email);
+        if (existingEmail) {
             throw new Error('Email is already in use');
+        }
+        const existingUsername = await user_model_1.UserModel.findByUsername(username);
+        if (existingUsername) {
+            throw new Error('Username is already taken');
         }
         const salt = await bcryptjs_1.default.genSalt(10);
         const passwordHash = await bcryptjs_1.default.hash(dto.password, salt);
         const newUser = {
             id: (0, uuid_1.v4)(),
-            username: dto.username.trim(),
-            email: dto.email.trim().toLowerCase(),
+            username,
+            email,
             password_hash: passwordHash,
             createdAt: new Date().toISOString(),
         };
@@ -35,7 +41,8 @@ class AuthService {
         return { token, user };
     }
     static async login(dto) {
-        const userRecord = await user_model_1.UserModel.findByEmail(dto.email);
+        const email = dto.email.trim().toLowerCase();
+        const userRecord = await user_model_1.UserModel.findByEmail(email);
         if (!userRecord) {
             throw new Error('Invalid email or password');
         }

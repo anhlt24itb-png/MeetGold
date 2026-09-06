@@ -50,6 +50,9 @@ export const DashboardPage: React.FC = () => {
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
   const [joinInput, setJoinInput] = useState('');
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [isStartingInstant, setIsStartingInstant] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleDate, setScheduleDate] = useState('2026-09-05');
@@ -129,19 +132,21 @@ export const DashboardPage: React.FC = () => {
 
   // Start Instant Meeting -> redirects through Green Room
   const handleStartInstant = async () => {
+    setIsStartingInstant(true);
     try {
       const room = await apiService.createRoom({
         name: `${displayName}'s Meeting Room`,
       });
       navigate(`/green-room/${room.id}`);
-    } catch {
-      const fallbackId = Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 6);
-      navigate(`/green-room/${fallbackId}`);
+    } catch (err: any) {
+      setJoinError(err.message || 'Failed to create room. Please try again.');
+    } finally {
+      setIsStartingInstant(false);
     }
   };
 
   // Join by code or URL
-  const handleJoin = (e: React.FormEvent) => {
+  const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!joinInput.trim()) return;
     let cleanId = joinInput.trim();
@@ -150,7 +155,17 @@ export const DashboardPage: React.FC = () => {
     } else if (cleanId.includes('/green-room/')) {
       cleanId = cleanId.split('/green-room/')[1].split('?')[0];
     }
-    navigate(`/green-room/${cleanId}`);
+
+    setIsJoining(true);
+    setJoinError(null);
+    try {
+      await apiService.joinRoom(cleanId);
+      navigate(`/green-room/${cleanId}`);
+    } catch (err: any) {
+      setJoinError(err.message || 'Room not found. Please check the code and try again.');
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   // Create Standalone Whiteboard
@@ -279,8 +294,10 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Action 1: Instant Meeting */}
           <div
-            onClick={handleStartInstant}
-            className="glass-card hover:border-indigo-accent/80 p-5 rounded-2xl cursor-pointer transition-all duration-200 hover:-translate-y-1 group relative overflow-hidden"
+            onClick={isStartingInstant ? undefined : handleStartInstant}
+            className={`glass-card hover:border-indigo-accent/80 p-5 rounded-2xl transition-all duration-200 hover:-translate-y-1 group relative overflow-hidden ${
+              isStartingInstant ? 'opacity-60 cursor-wait' : 'cursor-pointer'
+            }`}
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-accent/10 rounded-full blur-2xl group-hover:bg-indigo-accent/20 transition" />
             <div className="w-11 h-11 rounded-xl bg-indigo-accent text-white flex items-center justify-center shadow-lg shadow-indigo-accent/40 mb-4 group-hover:scale-110 transition">
@@ -291,7 +308,7 @@ export const DashboardPage: React.FC = () => {
               Launch an immediate video session with collaborative whiteboard.
             </p>
             <div className="mt-4 flex items-center text-xs text-indigo-light font-semibold group-hover:translate-x-1 transition">
-              <span>Launch Now</span>
+              <span>{isStartingInstant ? 'Launching...' : 'Launch Now'}</span>
               <ArrowRight size={13} className="ml-1" />
             </div>
           </div>
@@ -336,11 +353,12 @@ export const DashboardPage: React.FC = () => {
               />
               <button
                 type="submit"
-                disabled={!joinInput.trim()}
+                disabled={!joinInput.trim() || isJoining}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold text-xs py-2 rounded-xl transition"
               >
-                Join via Green Room
+                {isJoining ? 'Joining...' : 'Join via Green Room'}
               </button>
+              {joinError && <p className="text-[11px] text-rose-alert">{joinError}</p>}
             </form>
           </div>
 

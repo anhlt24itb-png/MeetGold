@@ -7,8 +7,11 @@ export class RoomController {
   static async create(req: AuthenticatedRequest, res: Response) {
     try {
       const { name } = req.body;
+      if (name !== undefined && typeof name !== 'string') {
+        return res.status(400).json({ message: 'Room name must be a string' });
+      }
       const ownerId = req.user?.id || uuidv4();
-      const room = await RoomService.createRoom({ name }, ownerId);
+      const room = await RoomService.createRoom({ name: name || '' }, ownerId);
       return res.status(201).json(room);
     } catch (err: any) {
       return res.status(500).json({ message: err.message || 'Failed to create room' });
@@ -17,7 +20,10 @@ export class RoomController {
 
   static async getById(req: Request, res: Response) {
     try {
-      const id = req.params.id as string;
+      const id = (req.params.id as string || '').trim();
+      if (!id) {
+        return res.status(400).json({ message: 'Room ID is required' });
+      }
       const room = await RoomService.getRoomDetails(id);
       if (!room) {
         return res.status(404).json({ message: 'Room not found' });
@@ -68,12 +74,24 @@ export class RoomController {
   static async join(req: AuthenticatedRequest, res: Response) {
     try {
       const roomId = req.params.id as string;
+      if (!roomId || !roomId.trim()) {
+        return res.status(400).json({ message: 'Room ID is required' });
+      }
+
+      const existingRoom = await RoomService.getRoomDetails(roomId);
+      if (!existingRoom) {
+        return res.status(404).json({ message: 'Room not found' });
+      }
+
       const userId = req.user?.id;
       if (userId) {
         await RoomService.joinRoom(roomId, userId);
       }
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, room: existingRoom });
     } catch (err: any) {
+      if (err.message === 'Room not found') {
+        return res.status(404).json({ message: err.message });
+      }
       return res.status(500).json({ message: err.message || 'Failed to join room' });
     }
   }

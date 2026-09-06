@@ -30,7 +30,12 @@ class RoomService {
         return room_model_1.RoomModel.findUserRooms(userId);
     }
     static async joinRoom(roomId, userId) {
+        const room = await room_model_1.RoomModel.findById(roomId);
+        if (!room) {
+            throw new Error('Room not found');
+        }
         await room_model_1.RoomModel.addMember(roomId, userId);
+        return room;
     }
 }
 exports.RoomService = RoomService;

@@ -37,11 +37,12 @@ class SignalingHandler {
     }
     static async handleJoinRoom(ws, roomId, peerId, payload) {
         const username = (payload && payload.username) ? payload.username.trim() : `User-${peerId.substring(0, 4)}`;
+        const userId = payload && payload.userId ? payload.userId : undefined;
         // Verify or fetch room info
         const roomDetails = await room_service_1.RoomService.getRoomDetails(roomId);
         const roomName = roomDetails ? roomDetails.name : `Room ${roomId}`;
         // Join in roomManager
-        const { peers, isHost } = room_manager_1.roomManager.joinRoom(roomId, peerId, username, ws);
+        const { peers, isHost } = room_manager_1.roomManager.joinRoom(roomId, peerId, username, ws, userId);
         // 1. Send back confirmation with existing peers list
         const roomJoinedMsg = {
             type: 'ROOM_JOINED',
@@ -64,6 +65,7 @@ class SignalingHandler {
             payload: {
                 peerId,
                 username,
+                userId,
                 joinedAt: Date.now(),
             },
         };

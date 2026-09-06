@@ -109,8 +109,8 @@ class ApiService {
     return this.request<RoomDetails[]>('/rooms/user/history');
   }
 
-  async joinRoom(roomId: string): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>(`/rooms/${roomId}/join`, {
+  async joinRoom(roomId: string): Promise<{ success: boolean; room: RoomDetails }> {
+    return this.request<{ success: boolean; room: RoomDetails }>(`/rooms/${roomId}/join`, {
       method: 'POST',
     });
   }

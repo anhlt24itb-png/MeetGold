@@ -53,13 +53,14 @@ export class SignalingHandler {
     payload: JoinRoomPayload
   ): Promise<void> {
     const username = (payload && payload.username) ? payload.username.trim() : `User-${peerId.substring(0, 4)}`;
+    const userId = payload && payload.userId ? payload.userId : undefined;
 
     // Verify or fetch room info
     const roomDetails = await RoomService.getRoomDetails(roomId);
     const roomName = roomDetails ? roomDetails.name : `Room ${roomId}`;
 
     // Join in roomManager
-    const { peers, isHost } = roomManager.joinRoom(roomId, peerId, username, ws);
+    const { peers, isHost } = roomManager.joinRoom(roomId, peerId, username, ws, userId);
 
     // 1. Send back confirmation with existing peers list
     const roomJoinedMsg: SignalMessage<RoomJoinedPayload> = {
@@ -84,6 +85,7 @@ export class SignalingHandler {
       payload: {
         peerId,
         username,
+        userId,
         joinedAt: Date.now(),
       },
     };

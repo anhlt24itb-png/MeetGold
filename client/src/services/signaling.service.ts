@@ -134,13 +134,13 @@ class SignalingService {
     }
   }
 
-  joinRoom(roomId: string, username: string) {
+  joinRoom(roomId: string, username: string, userId?: string, email?: string) {
     this.currentRoomId = roomId;
     this.send({
       type: 'JOIN_ROOM',
       roomId,
       senderId: this.selfPeerId || 'pending',
-      payload: { username },
+      payload: { username, userId, email },
     });
   }
 

@@ -34,6 +34,35 @@ class UserModel {
         }
         return null;
     }
+    static async findByUsername(username) {
+        const pool = (0, database_1.getDbPool)();
+        if (pool) {
+            try {
+                const [rows] = await pool.query('SELECT id, username, email, password_hash, created_at FROM users WHERE username = ?', [username]);
+                if (rows.length > 0) {
+                    const r = rows[0];
+                    return {
+                        id: r.id,
+                        username: r.username,
+                        email: r.email,
+                        password_hash: r.password_hash,
+                        createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+                    };
+                }
+                return null;
+            }
+            catch (err) {
+                console.error('[UserModel.findByUsername] DB Error:', err);
+            }
+        }
+        // Fallback
+        for (const user of inMemoryUsers.values()) {
+            if (user.username.toLowerCase() === username.toLowerCase()) {
+                return user;
+            }
+        }
+        return null;
+    }
     static async findById(id) {
         const pool = (0, database_1.getDbPool)();
         if (pool) {

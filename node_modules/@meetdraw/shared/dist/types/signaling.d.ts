@@ -2,6 +2,7 @@ export type SignalType = 'JOIN_ROOM' | 'LEAVE_ROOM' | 'ROOM_JOINED' | 'USER_JOIN
 export interface PeerInfo {
     id: string;
     username: string;
+    userId?: string;
     joinedAt: number;
     isHost?: boolean;
 }
@@ -15,6 +16,7 @@ export interface SignalMessage<T = unknown> {
 export interface JoinRoomPayload {
     username: string;
     userId?: string;
+    email?: string;
 }
 export interface RoomJoinedPayload {
     selfId: string;
@@ -25,6 +27,7 @@ export interface RoomJoinedPayload {
 export interface UserJoinedPayload {
     peerId: string;
     username: string;
+    userId?: string;
     joinedAt: number;
 }
 export interface UserLeftPayload {

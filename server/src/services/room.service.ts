@@ -36,7 +36,12 @@ export class RoomService {
     return RoomModel.findUserRooms(userId);
   }
 
-  static async joinRoom(roomId: string, userId: string): Promise<void> {
+  static async joinRoom(roomId: string, userId: string): Promise<RoomDetails> {
+    const room = await RoomModel.findById(roomId);
+    if (!room) {
+      throw new Error('Room not found');
+    }
     await RoomModel.addMember(roomId, userId);
+    return room;
   }
 }
