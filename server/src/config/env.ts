@@ -9,7 +9,7 @@ export const ENV = {
   JWT_SECRET: process.env.JWT_SECRET || 'meetdraw-default-jwt-secret-change-in-production',
   DB: {
     HOST: process.env.DB_HOST || 'localhost',
-    PORT: parseInt(process.env.DB_PORT || '3306', 10),
+    PORT: parseInt(process.env.DB_PORT || '3307', 10),
     USER: process.env.DB_USER || 'root',
     PASSWORD: process.env.DB_PASSWORD || '',
     NAME: process.env.DB_NAME || 'meetdraw_db',
