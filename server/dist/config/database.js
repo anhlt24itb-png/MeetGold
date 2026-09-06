@@ -15,23 +15,24 @@ let isConnected = false;
 async function initDatabase() {
     try {
         console.log(`[Database] Connecting to MySQL at ${env_1.ENV.DB.HOST}:${env_1.ENV.DB.PORT} with user '${env_1.ENV.DB.USER}'...`);
-        const sslConfig = env_1.ENV.DB.SSL ? { rejectUnauthorized: false } : undefined;
-        // 1. Try to ensure DB exists (works for local Docker, may skip for managed Cloud DBs)
-        try {
-            const adminConnection = await promise_1.default.createConnection({
-                host: env_1.ENV.DB.HOST,
-                port: env_1.ENV.DB.PORT,
-                user: env_1.ENV.DB.USER,
-                password: env_1.ENV.DB.PASSWORD,
-                ssl: sslConfig,
-                connectTimeout: 5000,
-            });
-            await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${env_1.ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-            await adminConnection.end();
-        }
-        catch (adminErr) {
-            // Cloud databases like TiDB / Aiven usually already have the database created and may forbid CREATE DATABASE
-            console.log(`[Database] Notice: Admin DB check skipped/passed: ${adminErr.message}`);
+        const isLocal = env_1.ENV.DB.HOST === 'localhost' || env_1.ENV.DB.HOST === '127.0.0.1';
+        const sslConfig = env_1.ENV.DB.SSL ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } : undefined;
+        // 1. Try to ensure DB exists for local environments (Docker/Localhost)
+        if (isLocal) {
+            try {
+                const adminConnection = await promise_1.default.createConnection({
+                    host: env_1.ENV.DB.HOST,
+                    port: env_1.ENV.DB.PORT,
+                    user: env_1.ENV.DB.USER,
+                    password: env_1.ENV.DB.PASSWORD,
+                    connectTimeout: 5000,
+                });
+                await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${env_1.ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+                await adminConnection.end();
+            }
+            catch (adminErr) {
+                console.log(`[Database] Notice: Local admin DB check: ${adminErr.message}`);
+            }
         }
         // 2. Create pool connected to the database
         pool = promise_1.default.createPool({

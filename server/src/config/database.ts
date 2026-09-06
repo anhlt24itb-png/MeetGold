@@ -10,26 +10,27 @@ export async function initDatabase(): Promise<boolean> {
   try {
     console.log(`[Database] Connecting to MySQL at ${ENV.DB.HOST}:${ENV.DB.PORT} with user '${ENV.DB.USER}'...`);
 
-    const sslConfig = ENV.DB.SSL ? { rejectUnauthorized: false } : undefined;
+    const isLocal = ENV.DB.HOST === 'localhost' || ENV.DB.HOST === '127.0.0.1';
+    const sslConfig = ENV.DB.SSL ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } : undefined;
 
-    // 1. Try to ensure DB exists (works for local Docker, may skip for managed Cloud DBs)
-    try {
-      const adminConnection = await mysql.createConnection({
-        host: ENV.DB.HOST,
-        port: ENV.DB.PORT,
-        user: ENV.DB.USER,
-        password: ENV.DB.PASSWORD,
-        ssl: sslConfig,
-        connectTimeout: 5000,
-      });
+    // 1. Try to ensure DB exists for local environments (Docker/Localhost)
+    if (isLocal) {
+      try {
+        const adminConnection = await mysql.createConnection({
+          host: ENV.DB.HOST,
+          port: ENV.DB.PORT,
+          user: ENV.DB.USER,
+          password: ENV.DB.PASSWORD,
+          connectTimeout: 5000,
+        });
 
-      await adminConnection.query(
-        `CREATE DATABASE IF NOT EXISTS \`${ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-      );
-      await adminConnection.end();
-    } catch (adminErr: any) {
-      // Cloud databases like TiDB / Aiven usually already have the database created and may forbid CREATE DATABASE
-      console.log(`[Database] Notice: Admin DB check skipped/passed: ${adminErr.message}`);
+        await adminConnection.query(
+          `CREATE DATABASE IF NOT EXISTS \`${ENV.DB.NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+        );
+        await adminConnection.end();
+      } catch (adminErr: any) {
+        console.log(`[Database] Notice: Local admin DB check: ${adminErr.message}`);
+      }
     }
 
     // 2. Create pool connected to the database
