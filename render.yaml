@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: meetdraw-server
+    name: meetgold
     runtime: node
     plan: free
     region: singapore

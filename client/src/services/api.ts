@@ -8,7 +8,7 @@ import {
   User,
 } from '@meetdraw/shared';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://meetgold.onrender.com/api';
 
 class ApiService {
   private token: string | null = null;
