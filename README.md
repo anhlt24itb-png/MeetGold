@@ -1,4 +1,4 @@
-# NowaDraw (MeetDraw)
+# MeetDraw
 
 > **Xây dựng hệ thống phòng họp trực tuyến tích hợp bảng trắng cộng tác theo mô hình Client–Server kết hợp Peer-to-Peer (P2P) sử dụng WebRTC.**
 
