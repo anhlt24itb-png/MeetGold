@@ -27,7 +27,7 @@
 - **Chat thời gian thực**:
   - Nhắn tin trực tiếp giữa các Peer qua WebRTC DataChannel (UDP).
 - **Kiến trúc mạng tối ưu**:
-  - **TCP (HTTP / WebSocket)**: Dùng cho REST API (Auth, Room metadata) và Signaling đàm phán kết nối ban đầu.
+  - **TCP (HTTP / WebSocket)**: Dùng cho REST API (Auth, Room metadata) và Signaling đàm phán kết nối ban đầu..
   - **UDP (WebRTC P2P)**: Truyền tải trực tiếp toàn bộ luồng Audio, Video, sự kiện Whiteboard và tin nhắn Chat. Không đi qua server trung gian nếu kết nối P2P thành công.
 
 ---
