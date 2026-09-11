@@ -23,20 +23,6 @@ export const LoginPage: React.FC = () => {
       color: '#4f46e5',
       badge: 'Host / Architecture',
     },
-    {
-      name: 'Chloe',
-      role: 'UI/UX Designer',
-      email: 'chloe@meetdraw.io',
-      color: '#ec4899',
-      badge: 'Product & Design',
-    },
-    {
-      name: 'Sarah',
-      role: 'NetOps Engineer',
-      email: 'sarah@meetdraw.io',
-      color: '#10b981',
-      badge: 'Security & Wireshark',
-    },
   ];
 
   const handleCustomLogin = async (e: React.FormEvent) => {
@@ -80,7 +66,7 @@ export const LoginPage: React.FC = () => {
               <h2 className="text-xl font-extrabold text-white tracking-tight">MeetDraw Sign In</h2>
               <div className="text-[11px] text-emerald-active flex items-center space-x-1 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-active animate-pulse" />
-                <span>Docker MySQL `meetdraw_db` Connected</span>
+                <span>Docker MySQL</span>
               </div>
             </div>
           </div>
