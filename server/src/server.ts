@@ -14,11 +14,11 @@ async function bootstrap() {
   // 3. Initialize WebSocket Signaling Server
   initSignalingServer(server);
 
-  // 4. Start Server
-  server.listen(ENV.PORT, () => {
+  // 4. Start Server on all network interfaces (LAN)
+  server.listen(ENV.PORT, '0.0.0.0', () => {
     console.log(`=========================================`);
-    console.log(`🚀 MeetDraw Server running on http://localhost:${ENV.PORT}`);
-    console.log(`📡 WebSocket Signaling at ws://localhost:${ENV.PORT}/signaling`);
+    console.log(`🚀 MeetDraw Server running on http://0.0.0.0:${ENV.PORT}`);
+    console.log(`📡 WebSocket Signaling at ws://0.0.0.0:${ENV.PORT}/signaling`);
     console.log(`=========================================`);
   });
 }

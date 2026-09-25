@@ -151,7 +151,7 @@ export const DashboardPage: React.FC = () => {
           </button>
 
           <a
-            href={window.location.hostname === 'localhost' ? 'http://localhost:5000/monitor' : 'https://meetgold.onrender.com/monitor'}
+            href={`http://${typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost'}:5000/monitor`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition shadow-sm"

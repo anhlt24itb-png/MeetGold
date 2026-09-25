@@ -153,7 +153,7 @@ export const TopNav: React.FC<TopNavProps> = ({
 
         {/* Server Room Monitor Button */}
         <a
-          href={window.location.hostname === 'localhost' ? `http://localhost:5000/monitor?roomId=${roomId}` : `https://meetgold.onrender.com/monitor?roomId=${roomId}`}
+          href={`http://${typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost'}:5000/monitor?roomId=${roomId}`}
           target="_blank"
           rel="noopener noreferrer"
           className="hidden sm:flex items-center space-x-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-indigo-700 hover:text-indigo-800 font-semibold px-2.5 py-1.5 rounded-xl border border-slate-200 transition"

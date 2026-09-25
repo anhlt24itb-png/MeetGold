@@ -10,10 +10,18 @@ import {
 
 const isLocal =
   typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.endsWith('.local'));
 
-const API_BASE =
-  import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:5000/api' : 'https://meetgold.onrender.com/api');
+const localBase =
+  typeof window !== 'undefined' && window.location.hostname
+    ? `http://${window.location.hostname}:5000/api`
+    : 'http://localhost:5000/api';
+
+const API_BASE = import.meta.env.VITE_API_URL || (isLocal ? localBase : 'http://localhost:5000/api');
 
 class ApiService {
   private token: string | null = null;

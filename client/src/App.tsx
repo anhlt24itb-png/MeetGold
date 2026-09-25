@@ -13,10 +13,8 @@ import { ProjectHistoryPage } from './pages/ProjectHistory/ProjectHistoryPage';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 
 const ServerMonitorEmbed: React.FC = () => {
-  const monitorUrl =
-    window.location.hostname === 'localhost'
-      ? 'http://localhost:5000/monitor'
-      : 'https://meetgold.onrender.com/monitor';
+  const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost';
+  const monitorUrl = `http://${host}:5000/monitor`;
 
   useEffect(() => {
     window.location.href = monitorUrl;
